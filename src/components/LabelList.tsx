@@ -1,3 +1,32 @@
-export default function LabelList() {
-  return <h3>Labels</h3>;
+import React from "react";
+import { useLabelsData } from "../helpers/useLabelsData";
+
+export default function LabelList({ selected, toggle }) {
+  const labelsQuery = useLabelsData();
+  
+  return (
+    <div className="labels">
+      <h3>Labels</h3>
+      {labelsQuery.isLoading ? (
+        <p>Loading...</p>
+      ) : (
+        <ul>
+          {React.Children.toArray(
+            labelsQuery.data.map((label) => (
+              <li>
+                <button
+                onClick={() => toggle(label.id)}
+                  className={`label ${
+                    selected.includes(label.id) ? "selected" : ""
+                  }${label.color}`}
+                >
+                  {label.name}
+                </button>
+              </li>
+            ))
+          )}
+        </ul>
+      )}
+    </div>
+  );
 }

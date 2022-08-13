@@ -13,10 +13,11 @@ export type IIssueItemProps = {
   status: string;
 };
 
-export default function IssuesList() {
-  const issuesQuery = useQuery(["issues"], () =>
-    fetch("/api/issues").then((res) => res.json())
-  );
+export default function IssuesList({ labels }) {
+  const issuesQuery = useQuery(["issues", { labels }], () => {
+    const labelsString = labels.map((label) => `labels[]=${label}`).join("&");
+    return fetch(`/api/issues?${labelsString}`).then((res) => res.json());
+  });
 
   const data = issuesQuery.data;
   return (
@@ -26,8 +27,6 @@ export default function IssuesList() {
         <h1>Loading...</h1>
       ) : (
         <ul className="issues-list">
-        
-
           {React.Children.toArray(
             data.map((issue) => (
               <IssueItem
