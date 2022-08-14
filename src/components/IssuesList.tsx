@@ -17,16 +17,49 @@ export default function IssuesList({ labels, status }) {
   const issuesQuery = useQuery(["issues", { labels, status }], () => {
     const statusString = status ? `&status=${status}` : "";
     const labelsString = labels.map((label) => `labels[]=${label}`).join("&");
-    return fetch(`/api/issues?${labelsString}${statusString}`).then((res) => res.json());
+    return fetch(`/api/issues?${labelsString}${statusString}`).then((res) =>
+      res.json()
+    );
   });
 
   const data = issuesQuery.data;
+
+  const [searchValue, setSearchValue] = React.useState("");
+
+  const searchQuery = useQuery(
+    ["issues", "search", searchValue],
+    () =>
+      fetch(`/api/search/issues?q=${searchValue}`).then((res) => res.json()),
+    {
+      enabled: searchValue.length > 0,
+    }
+  );
+
   return (
     <div>
-      <h2>Issues List</h2>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          setSearchValue(event.target.elements.search.value);
+        }}
+      >
+        <label htmlFor="search">Search Issues</label>
+        <input
+          type="search"
+          placeholder="Search"
+          name="search"
+          onChange={(event) => {
+            if (event.target.value.length === "") {
+              setSearchValue("");
+            }
+          }}
+          id="search"
+        />
+      </form>
       {issuesQuery.isLoading ? (
         <h1>Loading...</h1>
-      ) : (
+      ) : searchQuery.fetchStatus === "idle" &&
+        searchQuery.isLoading === true ? (
         <ul className="issues-list">
           {React.Children.toArray(
             data.map((issue) => (
@@ -43,6 +76,33 @@ export default function IssuesList({ labels, status }) {
             ))
           )}
         </ul>
+      ) : (
+        <>
+          <h2>Search Results</h2>
+          {searchQuery.isLoading ? (
+            <p>Loading...</p>
+          ) : (
+            <>
+              <p>{searchQuery.data.count} Results</p>
+              <ul className="issues-list">
+                {React.Children.toArray(
+                  searchQuery.data.items.map((issue) => (
+                    <IssueItem
+                      title={issue.title}
+                      number={issue.number}
+                      assignee={issue.assignee}
+                      commentCount={issue.comments.length}
+                      createdBy={issue.createdBy}
+                      createdDate={issue.createdDate}
+                      labels={issue.labels}
+                      status={issue.status}
+                    />
+                  ))
+                )}
+              </ul>
+            </>
+          )}
+        </>
       )}
     </div>
   );
