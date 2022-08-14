@@ -1,3 +1,8 @@
+export type ValueLabelPair = {
+  id: string
+  label: string
+}
+
 export const defaultLabels = [
   {
     id: "1",
@@ -53,7 +58,7 @@ export const defaultComments = [
   },
 ];
 
-export const possibleStatus = [
+export const possibleStatus: ValueLabelPair[] = [
   { id: "backlog", label: "Backlog" },
   { id: "todo", label: "Todo" },
   { id: "inProgress", label: "In Progress" },
