@@ -21,9 +21,6 @@ export default function IssuesList({ labels, status }) {
       res.json()
     );
   });
-
-  const data = issuesQuery.data;
-
   const [searchValue, setSearchValue] = React.useState("");
 
   const searchQuery = useQuery(
@@ -34,6 +31,7 @@ export default function IssuesList({ labels, status }) {
       enabled: searchValue.length > 0,
     }
   );
+
 
   return (
     <div>
@@ -48,21 +46,21 @@ export default function IssuesList({ labels, status }) {
           type="search"
           placeholder="Search"
           name="search"
+          id="search"
           onChange={(event) => {
-            if (event.target.value.length === "") {
+            if (event.target.value.length === 0) {
               setSearchValue("");
             }
           }}
-          id="search"
         />
       </form>
       {issuesQuery.isLoading ? (
-        <h1>Loading...</h1>
+        <p>Loading...</p>
       ) : searchQuery.fetchStatus === "idle" &&
         searchQuery.isLoading === true ? (
         <ul className="issues-list">
           {React.Children.toArray(
-            data.map((issue) => (
+            issuesQuery.data.map((issue) => (
               <IssueItem
                 title={issue.title}
                 number={issue.number}
