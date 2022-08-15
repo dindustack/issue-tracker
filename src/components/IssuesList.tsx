@@ -54,6 +54,7 @@ export default function IssuesList({ labels, status }) {
           }}
         />
       </form>
+      <h2>Issues List</h2>
       {issuesQuery.isLoading ? (
         <p>Loading...</p>
       ) : searchQuery.fetchStatus === "idle" &&
