@@ -1,4 +1,4 @@
-export default async function fetchWithError(url: string, options) {
+export default async function fetchWithError(url: string, options?: any) {
     const response = await fetch(url, options);
 
     if(response.status === 200) {
