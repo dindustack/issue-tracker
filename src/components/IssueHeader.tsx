@@ -31,7 +31,7 @@ export const IssueHeader = ({
           ) : (
             <GoIssueOpened />
           )}
-          {statusObject.label}
+          {statusObject?.label}
         </span>
         <span className="created-by">
           {createdUser.isLoading ? "..." : createdUser.data?.name}
