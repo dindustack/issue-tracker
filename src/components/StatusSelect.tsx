@@ -8,10 +8,11 @@ const possibleStatus = [
   { id: "cancelled", label: "Cancelled" },
 ];
 
-export const StatusSelect = ({ value, onChange }) => {
+export const StatusSelect = ({ value, onChange, noEmptyOption = false }) => {
   return (
     <select value={value} onChange={onChange} className="status-select">
-      <option value="">Select a status to filter</option>
+      {noEmptyOption ? null : <option value="">Select a status to filter</option>}
+      
       {React.Children.toArray(
         possibleStatus.map((status) => (
           <option value={status.id}>{status.label}</option>

@@ -30,6 +30,7 @@ export default function AddIssue() {
         onSubmit={(event) => {
           event.preventDefault();
           if (addIssue.isLoading) return;
+          // @ts-ignore
           addIssue.mutate({
             comment: event.target.comment.value,
             title: event.target.title.value,
