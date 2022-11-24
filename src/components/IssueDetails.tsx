@@ -1,28 +1,38 @@
 import React from "react";
-import { useQuery } from "react-query";
+import { useInfiniteQuery, useQuery } from "react-query";
 import { useParams } from "react-router-dom";
-import fetchWithError from "../helpers/fetchWithError";
 import { relativeDate } from "../helpers/relativeDate";
+import useScrollToBottomAction from "../helpers/useScrollToBottomAction";
 import { useUserData } from "../helpers/useUserData";
 import IssueAssignment from "./IssueAssignment";
 import { IssueHeader } from "./IssueHeader";
 import IssueLabels from "./IssueLabels";
 import IssueStatus from "./IssueStatus";
+import Loader from "./Loader";
 
 function useIssueData(issueNumber) {
   return useQuery(["issues", issueNumber], ({ signal }) => {
-    return fetchWithError(`/api/issues/${issueNumber}`, { signal }).then(
-      (res) => res.json()
+    return fetch(`/api/issues/${issueNumber}`, { signal }).then((res) =>
+      res.json()
     );
   });
 }
 
 function useIssueComments(issueNumber) {
-  return useQuery(["issues", issueNumber, "comments"], ({ signal }) => {
-    return fetchWithError(`/api/issues/${issueNumber}/comments`, {
-      signal,
-    }).then((res) => res.json());
-  });
+  return useInfiniteQuery(
+    ["issues", issueNumber, "comments"],
+    ({ signal, pageParam = 1 }) => {
+      return fetch(`/api/issues/${issueNumber}/comments?page=${pageParam}`, {
+        signal,
+      }).then((res) => res.json());
+    },
+    {
+      getNextPageParam: (lastPage, pages) => {
+        if (lastPage.length === 0) return;
+        return pages.length + 1;
+      },
+    }
+  );
 }
 
 function Comment({ comment, createdBy, createdDate }) {
@@ -56,6 +66,8 @@ export default function IssueDetails() {
   const issueQuery = useIssueData(number);
   const commentsQuery = useIssueComments(number);
 
+  useScrollToBottomAction(document, commentsQuery.fetchNextPage, 100);
+
   return (
     <div className="issue-details">
       {issueQuery.isLoading ? (
@@ -69,18 +81,24 @@ export default function IssueDetails() {
               {commentsQuery.isLoading ? (
                 <p>Loading...</p>
               ) : (
-                commentsQuery.data?.map((comment) => (
-                  <Comment key={comment.id} {...comment} />
-                ))
+                commentsQuery.data?.pages.map((commentPage) =>
+                  commentPage.map((comment) => (
+                    <Comment key={comment.id} {...comment} />
+                  ))
+                )
               )}
+              {commentsQuery.isFetchingNextPage && <Loader />}
             </section>
             <aside>
-              <IssueStatus status={issueQuery.data.status} issueNumber={issueQuery.data.number.toString()} />
+              <IssueStatus
+                status={issueQuery.data.status}
+                issueNumber={issueQuery.data.number.toString()}
+              />
               <IssueAssignment
                 assignee={issueQuery.data.assignee}
                 issueNumber={issueQuery.data.number.toString()}
               />
-               <IssueLabels
+              <IssueLabels
                 labels={issueQuery.data.labels}
                 issueNumber={issueQuery.data.number.toString()}
               />
