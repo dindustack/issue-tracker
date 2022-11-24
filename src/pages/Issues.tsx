@@ -7,6 +7,7 @@ import { StatusSelect } from "../components/StatusSelect";
 export default function Issues() {
   const [labels, setLabels] = React.useState([]);
   const [status, setStatus] = React.useState("");
+  const [pageNum, setPageNum] = React.useState(1);
 
   const toggle = (label) => {
     setLabels((currentLabels) =>
@@ -25,12 +26,35 @@ export default function Issues() {
       <main>
         <section>
           <h1>Issues</h1>
-          <IssuesList status={status} labels={labels} />
+          <IssuesList
+            status={status}
+            labels={labels}
+            pageNum={pageNum}
+            setPageNum={setPageNum}
+          />
         </section>
         <aside>
-          <LabelList selected={labels} toggle={toggle} />
+          <LabelList
+            selected={labels}
+            toggle={(label) => {
+              setLabels((currentLabels) =>
+                currentLabels.includes(label)
+                  ? currentLabels.filter(
+                      (currentLabel) => currentLabel !== label
+                    )
+                  : currentLabels.concat(label)
+              );
+              setPageNum(1);
+            }}
+          />
           <h3>Status</h3>
-          <StatusSelect value={status} onChange={(event) => setStatus(selectStatus)} />
+          <StatusSelect
+            value={status}
+            onChange={(event) => {
+              setStatus(event.target.value);
+              setPageNum(1);
+            }}
+          />
 
           <hr />
           <Link className="button" to="/add">
@@ -41,5 +65,3 @@ export default function Issues() {
     </div>
   );
 }
-
-
